@@ -10,7 +10,7 @@
     {
       "name": "omc-mcp-extension",
       "description": "Adds Serena, Sequential-Thinking, and Morphllm MCP servers to oh-my-claudecode",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
         "name": "chlee1001"
       },
