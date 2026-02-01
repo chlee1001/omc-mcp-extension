@@ -1,0 +1,47 @@
+{
+  "name": "omc-mcp-extension",
+  "version": "1.0.0",
+  "description": "MCP server integration for oh-my-claudecode - adds Context7, Serena, Sequential, and Morphllm",
+  "author": {
+    "name": "chlee1001"
+  },
+  "repository": "https://github.com/chlee1001/omc-mcp-extension",
+  "homepage": "https://github.com/chlee1001/omc-mcp-extension#readme",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "mcp",
+    "oh-my-claudecode",
+    "extension",
+    "context7",
+    "serena",
+    "sequential-thinking",
+    "morphllm"
+  ],
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from", "git+https://github.com/oraios/serena",
+        "serena", "start-mcp-server",
+        "--context", "ide-assistant"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "morphllm-fast-apply": {
+      "command": "npx",
+      "args": ["@morph-llm/morph-fast-apply", "${HOME}"],
+      "env": {
+        "MORPH_API_KEY": "${MORPH_API_KEY}",
+        "ALL_TOOLS": "true"
+      }
+    }
+  }
+}
