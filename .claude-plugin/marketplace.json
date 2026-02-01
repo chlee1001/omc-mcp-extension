@@ -1,12 +1,23 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "omc-mcp-extension",
-  "description": "MCP server extension marketplace for oh-my-claudecode",
+  "description": "MCP server extension for oh-my-claudecode - adds Serena, Sequential-Thinking, and Morphllm",
+  "owner": {
+    "name": "chlee1001",
+    "email": "chlee1001@users.noreply.github.com"
+  },
   "plugins": [
     {
       "name": "omc-mcp-extension",
       "description": "Adds Serena, Sequential-Thinking, and Morphllm MCP servers to oh-my-claudecode",
       "version": "1.2.0",
-      "path": "."
+      "author": {
+        "name": "chlee1001"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/chlee1001/omc-mcp-extension",
+      "tags": ["mcp", "serena", "sequential-thinking", "morphllm", "oh-my-claudecode"]
     }
   ]
 }
