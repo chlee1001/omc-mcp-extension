@@ -10,11 +10,10 @@ A lightweight extension plugin that adds additional MCP servers to [oh-my-claude
 
 | MCP Server | Purpose | Required |
 |------------|---------|----------|
+| **Context7** | Official library documentation lookup | npx |
 | **Serena** | Semantic code analysis + session memory persistence | uvx |
 | **Sequential** | Structured multi-step reasoning (30-50% token savings) | npx |
 | **Morphllm** | Pattern-based bulk code editing | npx + API Key |
-
-> **Note**: Context7 is already built into OMC, so it's not included here.
 
 ---
 
@@ -55,8 +54,8 @@ Run the setup skill to complete installation:
 ```
 
 This will:
-- ✅ Backup your existing `CLAUDE.md` and `settings.json`
-- ✅ Add MCP servers to `~/.claude/settings.json`
+- ✅ Backup your existing files
+- ✅ Create/Update `~/.claude/.mcp.json` with MCP servers
 - ✅ Copy MCP behavior guides to `~/.claude/`
 - ✅ Add `@import` references to `~/.claude/CLAUDE.md`
 - ✅ Configure `MORPH_API_KEY` (optional, for Morphllm)
@@ -75,14 +74,28 @@ This will:
 
 ```
 ~/.claude/
+├── .mcp.json              # MCP server configurations (created/updated)
 ├── CLAUDE.md              # Updated with @import references
-├── settings.json          # Updated with MCP servers + env
+├── MCP_Context7.md        # Behavior guide (copied)
 ├── MCP_Serena.md          # Behavior guide (copied)
 ├── MCP_Sequential.md      # Behavior guide (copied)
 ├── MCP_Morphllm.md        # Behavior guide (copied)
 └── backups/
+    ├── .mcp.json.backup_[timestamp]
     ├── CLAUDE.md.backup_[timestamp]
     └── settings.json.backup_[timestamp]
+```
+
+**~/.claude/.mcp.json:**
+```json
+{
+  "mcpServers": {
+    "context7": { "command": "npx", "args": ["-y", "@upstash/context7-mcp"] },
+    "serena": { "command": "uvx", "args": [...] },
+    "sequential-thinking": { "command": "npx", "args": [...] },
+    "morphllm-fast-apply": { "command": "npx", "args": [...], "env": {...} }
+  }
+}
 ```
 
 **CLAUDE.md additions:**
@@ -90,24 +103,11 @@ This will:
 <!-- OMC-MCP-EXT:START -->
 # MCP Server Guides (omc-mcp-extension)
 
+@MCP_Context7.md
 @MCP_Serena.md
 @MCP_Sequential.md
 @MCP_Morphllm.md
 <!-- OMC-MCP-EXT:END -->
-```
-
-**settings.json additions:**
-```json
-{
-  "mcpServers": {
-    "serena": { "command": "uvx", "args": [...] },
-    "sequential-thinking": { "command": "npx", "args": [...] },
-    "morphllm-fast-apply": { "command": "npx", "args": [...], "env": {...} }
-  },
-  "env": {
-    "MORPH_API_KEY": "your-key-here"
-  }
-}
 ```
 
 ---
