@@ -1,0 +1,12 @@
+{
+  "name": "omc-mcp-extension",
+  "description": "MCP server extension marketplace for oh-my-claudecode",
+  "plugins": [
+    {
+      "name": "omc-mcp-extension",
+      "description": "Adds Serena, Sequential-Thinking, and Morphllm MCP servers to oh-my-claudecode",
+      "version": "1.2.0",
+      "path": "."
+    }
+  ]
+}
