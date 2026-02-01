@@ -43,7 +43,17 @@ claude plugin marketplace add https://github.com/chlee1001/omc-mcp-extension
 claude plugin install omc-mcp-extension@omc-mcp-extension
 ```
 
-### Post-Installation (Required for Morphllm)
+### Post-Installation Setup (Recommended)
+
+After installation, run the setup skill to add MCP behavior guides to your CLAUDE.md:
+
+```
+/omc-mcp-extension:setup
+```
+
+This will add behavior guides that help Claude automatically select the right MCP tool for each task.
+
+### Morphllm API Key (Required for Morphllm)
 
 To use Morphllm, you **must** set the environment variable:
 
@@ -56,6 +66,32 @@ source ~/.zshrc
 ```
 
 > **Warning**: Without the API key, the Morphllm MCP server will not function. If you don't need Morphllm, you can skip this step.
+
+---
+
+## Skills
+
+| Skill | Description | Usage |
+|-------|-------------|-------|
+| **setup** | Install MCP behavior guides to CLAUDE.md | `/omc-mcp-extension:setup` |
+
+### Setup Skill
+
+The setup skill adds MCP behavior guides to your `~/.claude/CLAUDE.md`:
+
+```markdown
+<!-- OMC-MCP-EXT:START -->
+# MCP Server Behavior Guides
+... guides for Serena, Sequential, Morphllm ...
+<!-- OMC-MCP-EXT:END -->
+```
+
+**Features:**
+- Preserves existing CLAUDE.md content
+- Uses markers for easy update/removal
+- Run again to update guides
+
+**To remove:** Delete content between `<!-- OMC-MCP-EXT:START -->` and `<!-- OMC-MCP-EXT:END -->` markers.
 
 ---
 
@@ -129,6 +165,8 @@ Detailed usage guides for each MCP server are in the `mcp/` directory:
 - `mcp/MCP_Sequential.md` - Structured reasoning usage
 - `mcp/MCP_Morphllm.md` - Bulk editing usage
 
+These guides are installed to your CLAUDE.md when you run `/omc-mcp-extension:setup`.
+
 ---
 
 ## Compatibility
@@ -167,6 +205,15 @@ which uvx
 
 # If not found, install
 pip install uv
+```
+
+### Behavior guides not working
+```bash
+# Re-run setup
+/omc-mcp-extension:setup
+
+# Or manually check ~/.claude/CLAUDE.md for markers
+grep "OMC-MCP-EXT" ~/.claude/CLAUDE.md
 ```
 
 ---
