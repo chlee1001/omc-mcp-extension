@@ -29,6 +29,9 @@ node --version   # v18.0.0 or higher
 # uvx required (for Serena)
 pip install uv   # or: pipx install uv
 which uvx        # verify installation
+
+# jq required (for setup skill)
+brew install jq  # macOS
 ```
 
 ### Install
@@ -43,29 +46,22 @@ claude plugin marketplace add https://github.com/chlee1001/omc-mcp-extension
 claude plugin install omc-mcp-extension@omc-mcp-extension
 ```
 
-### Post-Installation Setup (Recommended)
+### Post-Installation Setup (Required)
 
-After installation, run the setup skill to add MCP behavior guides to your CLAUDE.md:
+Run the setup skill to complete installation:
 
 ```
 /omc-mcp-extension:setup
 ```
 
-This will add behavior guides that help Claude automatically select the right MCP tool for each task.
+This will:
+- ✅ Backup your existing `CLAUDE.md` and `settings.json`
+- ✅ Add MCP servers to `~/.claude/settings.json`
+- ✅ Copy MCP behavior guides to `~/.claude/`
+- ✅ Add `@import` references to `~/.claude/CLAUDE.md`
+- ✅ Configure `MORPH_API_KEY` (optional, for Morphllm)
 
-### Morphllm API Key (Required for Morphllm)
-
-To use Morphllm, you **must** set the environment variable:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-echo 'export MORPH_API_KEY="your-api-key-here"' >> ~/.zshrc
-
-# Restart terminal or source the file
-source ~/.zshrc
-```
-
-> **Warning**: Without the API key, the Morphllm MCP server will not function. If you don't need Morphllm, you can skip this step.
+> ⚠️ **Restart Claude Code after setup to apply MCP changes!**
 
 ---
 
@@ -73,25 +69,46 @@ source ~/.zshrc
 
 | Skill | Description | Usage |
 |-------|-------------|-------|
-| **setup** | Install MCP behavior guides to CLAUDE.md | `/omc-mcp-extension:setup` |
+| **setup** | Complete MCP setup with backups | `/omc-mcp-extension:setup` |
 
-### Setup Skill
+### What Setup Does
 
-The setup skill adds MCP behavior guides to your `~/.claude/CLAUDE.md`:
+```
+~/.claude/
+├── CLAUDE.md              # Updated with @import references
+├── settings.json          # Updated with MCP servers + env
+├── MCP_Serena.md          # Behavior guide (copied)
+├── MCP_Sequential.md      # Behavior guide (copied)
+├── MCP_Morphllm.md        # Behavior guide (copied)
+└── backups/
+    ├── CLAUDE.md.backup_[timestamp]
+    └── settings.json.backup_[timestamp]
+```
 
+**CLAUDE.md additions:**
 ```markdown
 <!-- OMC-MCP-EXT:START -->
-# MCP Server Behavior Guides
-... guides for Serena, Sequential, Morphllm ...
+# MCP Server Guides (omc-mcp-extension)
+
+@MCP_Serena.md
+@MCP_Sequential.md
+@MCP_Morphllm.md
 <!-- OMC-MCP-EXT:END -->
 ```
 
-**Features:**
-- Preserves existing CLAUDE.md content
-- Uses markers for easy update/removal
-- Run again to update guides
-
-**To remove:** Delete content between `<!-- OMC-MCP-EXT:START -->` and `<!-- OMC-MCP-EXT:END -->` markers.
+**settings.json additions:**
+```json
+{
+  "mcpServers": {
+    "serena": { "command": "uvx", "args": [...] },
+    "sequential-thinking": { "command": "npx", "args": [...] },
+    "morphllm-fast-apply": { "command": "npx", "args": [...], "env": {...} }
+  },
+  "env": {
+    "MORPH_API_KEY": "your-key-here"
+  }
+}
+```
 
 ---
 
@@ -104,12 +121,12 @@ The setup skill adds MCP behavior guides to your `~/.claude/CLAUDE.md`:
 │                    Claude Code Runtime                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  MCP Servers                                                 │
+│  MCP Servers (in ~/.claude/settings.json)                   │
 │  ├── OMC Built-in                                           │
 │  │   ├─ "t" (OMC Bridge) - LSP, AST tools (18 tools)       │
 │  │   └─ context7 - Official docs lookup (built-in)         │
 │  │                                                          │
-│  └── omc-mcp-extension (this plugin)                        │
+│  └── omc-mcp-extension (added by setup skill)              │
 │      ├─ serena             → Semantic analysis + memory     │
 │      ├─ sequential-thinking → Structured reasoning          │
 │      └─ morphllm-fast-apply → Bulk editing                  │
@@ -159,13 +176,15 @@ OMC Agents + MCP Tools Collaboration
 
 ## MCP Behavior Guides
 
-Detailed usage guides for each MCP server are in the `mcp/` directory:
+Detailed usage guides for each MCP server:
 
-- `mcp/MCP_Serena.md` - Semantic analysis and memory usage
-- `mcp/MCP_Sequential.md` - Structured reasoning usage
-- `mcp/MCP_Morphllm.md` - Bulk editing usage
+| File | Description |
+|------|-------------|
+| `MCP_Serena.md` | Semantic analysis, symbol operations, session memory |
+| `MCP_Sequential.md` | Structured reasoning, multi-step analysis |
+| `MCP_Morphllm.md` | Bulk editing, pattern-based transformations |
 
-These guides are installed to your CLAUDE.md when you run `/omc-mcp-extension:setup`.
+These are automatically copied to `~/.claude/` and imported via `@` references when you run `/omc-mcp-extension:setup`.
 
 ---
 
@@ -177,6 +196,7 @@ These guides are installed to your CLAUDE.md when you run `/omc-mcp-extension:se
 | **Claude Code** | Latest |
 | **Node.js** | 18+ |
 | **Python** | 3.10+ (for Serena) |
+| **jq** | Latest (for setup) |
 
 ### Namespace Separation (No Conflicts)
 
@@ -189,16 +209,30 @@ These guides are installed to your CLAUDE.md when you run `/omc-mcp-extension:se
 
 ## Troubleshooting
 
-### Morphllm not working
-```bash
-# Check API key
-echo $MORPH_API_KEY
+### MCP servers not showing
 
-# If not set, add and restart terminal
-export MORPH_API_KEY="your-key"
+```bash
+# Verify settings.json has mcpServers
+cat ~/.claude/settings.json | jq '.mcpServers | keys'
+
+# Expected: ["serena", "sequential-thinking", "morphllm-fast-apply", ...]
+
+# If missing, re-run setup
+/omc-mcp-extension:setup
+```
+
+### Morphllm not working
+
+```bash
+# Check API key in settings.json
+cat ~/.claude/settings.json | jq '.env.MORPH_API_KEY'
+
+# If null, add it manually
+claude config set env.MORPH_API_KEY "your-key-here"
 ```
 
 ### Serena not starting
+
 ```bash
 # Verify uvx installation
 which uvx
@@ -207,13 +241,45 @@ which uvx
 pip install uv
 ```
 
-### Behavior guides not working
-```bash
-# Re-run setup
-/omc-mcp-extension:setup
+### Restore from backup
 
-# Or manually check ~/.claude/CLAUDE.md for markers
-grep "OMC-MCP-EXT" ~/.claude/CLAUDE.md
+```bash
+# List backups
+ls -la ~/.claude/backups/
+
+# Restore settings.json
+cp ~/.claude/backups/settings.json.backup_[timestamp] ~/.claude/settings.json
+
+# Restore CLAUDE.md
+cp ~/.claude/backups/CLAUDE.md.backup_[timestamp] ~/.claude/CLAUDE.md
+```
+
+---
+
+## Uninstall
+
+### Remove MCP configuration
+
+```bash
+# Remove MCP servers from settings.json
+jq 'del(.mcpServers.serena, .mcpServers["sequential-thinking"], .mcpServers["morphllm-fast-apply"])' \
+  ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
+
+# Remove MORPH_API_KEY
+jq 'del(.env.MORPH_API_KEY)' ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
+
+# Remove from CLAUDE.md
+sed -i '' '/<!-- OMC-MCP-EXT:START -->/,/<!-- OMC-MCP-EXT:END -->/d' ~/.claude/CLAUDE.md
+
+# Remove MCP guide files
+rm -f ~/.claude/MCP_Serena.md ~/.claude/MCP_Sequential.md ~/.claude/MCP_Morphllm.md
+```
+
+### Remove plugin
+
+```bash
+claude plugin uninstall omc-mcp-extension@omc-mcp-extension
+claude plugin marketplace remove omc-mcp-extension
 ```
 
 ---
@@ -221,6 +287,7 @@ grep "OMC-MCP-EXT" ~/.claude/CLAUDE.md
 ## Credits
 
 - Built to extend [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)
+- MCP Servers: [Serena](https://github.com/oraios/serena), [Sequential-Thinking](https://github.com/modelcontextprotocol/servers), [Morphllm](https://morphllm.com)
 
 ---
 
