@@ -1,7 +1,7 @@
 {
   "name": "omc-mcp-extension",
-  "version": "1.0.0",
-  "description": "MCP server integration for oh-my-claudecode - adds Context7, Serena, Sequential, and Morphllm",
+  "version": "1.1.0",
+  "description": "MCP server extension for oh-my-claudecode - adds Serena, Sequential-Thinking, and Morphllm",
   "author": {
     "name": "chlee1001"
   },
@@ -13,16 +13,11 @@
     "mcp",
     "oh-my-claudecode",
     "extension",
-    "context7",
     "serena",
     "sequential-thinking",
     "morphllm"
   ],
   "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
     "serena": {
       "command": "uvx",
       "args": [

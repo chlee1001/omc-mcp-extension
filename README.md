@@ -1,8 +1,8 @@
 # omc-mcp-extension
 
-> MCP server integration for oh-my-claudecode
+> MCP server extension for oh-my-claudecode
 
-A lightweight extension plugin that adds [SuperClaude](https://github.com/SuperClaude-Org/SuperClaude_Framework)'s MCP integration capabilities to [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)'s powerful skill/hook/agent system.
+A lightweight extension plugin that adds additional MCP servers to [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)'s powerful skill/hook/agent system.
 
 ---
 
@@ -10,10 +10,11 @@ A lightweight extension plugin that adds [SuperClaude](https://github.com/SuperC
 
 | MCP Server | Purpose | Required |
 |------------|---------|----------|
-| **Context7** | Official library documentation lookup (React, Vue, Next.js, etc.) | npx |
 | **Serena** | Semantic code analysis + session memory persistence | uvx |
 | **Sequential** | Structured multi-step reasoning (30-50% token savings) | npx |
 | **Morphllm** | Pattern-based bulk code editing | npx + API Key |
+
+> **Note**: Context7 is already built into OMC, so it's not included here.
 
 ---
 
@@ -34,12 +35,12 @@ which uvx        # verify installation
 
 ```bash
 # 1. Install OMC first (skip if already installed)
-/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
-/plugin install oh-my-claudecode
+claude plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+claude plugin install oh-my-claudecode@omc
 
 # 2. Install this extension plugin
-/plugin marketplace add https://github.com/chlee1001/omc-mcp-extension
-/plugin install omc-mcp-extension
+claude plugin marketplace add https://github.com/chlee1001/omc-mcp-extension
+claude plugin install omc-mcp-extension@omc-mcp-extension
 ```
 
 ### Post-Installation (Required for Morphllm)
@@ -68,52 +69,42 @@ source ~/.zshrc
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  MCP Servers                                                 │
-│  ├── "t" (OMC Bridge) - OMC's own tools                     │
-│  │   └─ mcp__t__lsp_*, mcp__t__ast_* (18 tools)             │
+│  ├── OMC Built-in                                           │
+│  │   ├─ "t" (OMC Bridge) - LSP, AST tools (18 tools)       │
+│  │   └─ context7 - Official docs lookup (built-in)         │
 │  │                                                          │
-│  └── External MCP (omc-mcp-extension)                       │
-│      ├─ omc-mcp-extension:context7      → Official docs     │
-│      ├─ omc-mcp-extension:serena        → Semantic analysis │
-│      ├─ omc-mcp-extension:sequential-thinking → Reasoning   │
-│      └─ omc-mcp-extension:morphllm-fast-apply → Bulk edit   │
+│  └── omc-mcp-extension (this plugin)                        │
+│      ├─ serena             → Semantic analysis + memory     │
+│      ├─ sequential-thinking → Structured reasoning          │
+│      └─ morphllm-fast-apply → Bulk editing                  │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-> **Note**: Server names follow the `{plugin-name}:{server-name}` pattern as per OMC's discovery system.
-
 ### Workflow Example
 
 ```
-User: "autopilot: build a React dashboard"
+User: "autopilot: refactor the authentication module"
          │
          ▼
-OMC Hook: keyword-detector.mjs
+OMC Hook: keyword-detector
   → Detects "autopilot" → Injects skill
-         │
-         ▼
-MCP Guide: MCP_Context7.md
-  → Detects "React" keyword
-  → Calls mcp__context7__query-docs
-  → Retrieves official React patterns
          │
          ▼
 OMC Agents + MCP Tools Collaboration
   Analyst  → mcp__t__lsp_diagnostics (code analysis)
-  Architect → mcp__sequential-thinking (design)
+  Architect → mcp__sequential-thinking__* (structured reasoning)
   Executor → mcp__serena__find_symbol (navigation)
-           → mcp__morphllm__edit_file (editing)
+           → mcp__morphllm-fast-apply__edit_file (bulk editing)
 ```
 
 ---
 
 ## MCP Selection Guide
 
-Claude automatically selects the appropriate MCP based on these guides:
-
 | When you need... | Use | Example |
 |------------------|-----|---------|
-| Official library docs | **Context7** | "How to use React useEffect" |
+| Official library docs | **Context7** (OMC built-in) | "How to use React useEffect" |
 | Symbol rename/find refs | **Serena** | "Rename getUserData to fetchUser" |
 | Complex multi-step analysis | **Sequential** | "Why is this API slow?" |
 | Pattern-based bulk edits | **Morphllm** | "Convert all var to const" |
@@ -125,7 +116,7 @@ Claude automatically selects the appropriate MCP based on these guides:
 |----------|----------|
 | Build React app | Context7(docs) → Sequential(design) → Serena(implement) |
 | Refactor legacy code | Serena(analyze) → Sequential(plan) → Morphllm(transform) |
-| Debug issues | Sequential(analyze) → Serena(navigate) → Context7(solution) |
+| Debug issues | Sequential(analyze) → Serena(navigate) |
 | Unify code style | Morphllm(bulk transform) |
 
 ---
@@ -134,7 +125,6 @@ Claude automatically selects the appropriate MCP based on these guides:
 
 Detailed usage guides for each MCP server are in the `mcp/` directory:
 
-- `mcp/MCP_Context7.md` - Official documentation lookup triggers and usage
 - `mcp/MCP_Serena.md` - Semantic analysis and memory usage
 - `mcp/MCP_Sequential.md` - Structured reasoning usage
 - `mcp/MCP_Morphllm.md` - Bulk editing usage
@@ -154,8 +144,8 @@ Detailed usage guides for each MCP server are in the `mcp/` directory:
 
 | Source | Namespace | Tools |
 |--------|-----------|-------|
-| OMC | `mcp__t__*` | LSP, AST, Python REPL (18 tools) |
-| Extension | `mcp__context7__*`, `mcp__serena__*`, etc. | External MCP (4 servers) |
+| OMC | `mcp__t__*`, `mcp__context7__*` | LSP, AST, Context7 |
+| Extension | `mcp__serena__*`, `mcp__sequential-thinking__*`, `mcp__morphllm-fast-apply__*` | 3 servers |
 
 ---
 
@@ -179,15 +169,10 @@ which uvx
 pip install uv
 ```
 
-### Context7 is slow
-- First invocation may be slow due to npx download
-- Subsequent calls are cached and faster
-
 ---
 
 ## Credits
 
-- MCP configurations adapted from [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework)
 - Built to extend [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)
 
 ---
