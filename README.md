@@ -55,10 +55,10 @@ Run the setup skill to complete installation:
 
 This will:
 - ✅ Backup your existing files
-- ✅ Create/Update `~/.claude/.mcp.json` with MCP servers
+- ✅ Update `~/.claude/settings.json` mcpServers (skips duplicates)
 - ✅ Copy MCP behavior guides to `~/.claude/`
 - ✅ Add `@import` references to `~/.claude/CLAUDE.md`
-- ✅ Configure `MORPH_API_KEY` (optional, for Morphllm)
+- ✅ Configure Morphllm with API key directly in mcpServers
 
 > ⚠️ **Restart Claude Code after setup to apply MCP changes!**
 
@@ -74,26 +74,29 @@ This will:
 
 ```
 ~/.claude/
-├── .mcp.json              # MCP server configurations (created/updated)
+├── settings.json          # mcpServers updated (skips duplicates)
 ├── CLAUDE.md              # Updated with @import references
 ├── MCP_Context7.md        # Behavior guide (copied)
 ├── MCP_Serena.md          # Behavior guide (copied)
 ├── MCP_Sequential.md      # Behavior guide (copied)
 ├── MCP_Morphllm.md        # Behavior guide (copied)
 └── backups/
-    ├── .mcp.json.backup_[timestamp]
     ├── CLAUDE.md.backup_[timestamp]
     └── settings.json.backup_[timestamp]
 ```
 
-**~/.claude/.mcp.json:**
+**~/.claude/settings.json mcpServers:**
 ```json
 {
   "mcpServers": {
     "context7": { "command": "npx", "args": ["-y", "@upstash/context7-mcp"] },
     "serena": { "command": "uvx", "args": [...] },
     "sequential-thinking": { "command": "npx", "args": [...] },
-    "morphllm-fast-apply": { "command": "npx", "args": [...], "env": {...} }
+    "morphllm-fast-apply": {
+      "command": "npx",
+      "args": ["@morph-llm/morph-fast-apply"],
+      "env": { "MORPH_API_KEY": "your-key-here" }
+    }
   }
 }
 ```
