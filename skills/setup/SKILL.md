@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Install MCP servers and behavior guides to ~/.claude/
+description: Install MCP servers and behavior guides
 ---
 
 # omc-mcp-extension Setup
@@ -9,8 +9,8 @@ Complete setup for MCP servers with behavior guides.
 
 ## What This Does
 
-1. **Backs up** existing `~/.claude/CLAUDE.md` and `~/.claude/settings.json`
-2. **Updates** `~/.claude/settings.json` mcpServers (skips duplicates)
+1. **Backs up** `~/.claude.json` and `~/.claude/CLAUDE.md`
+2. **Updates** `~/.claude.json` mcpServers (skips duplicates)
 3. **Copies MCP guide files** to `~/.claude/` directory
 4. **Adds `@import` references** to `~/.claude/CLAUDE.md`
 
@@ -19,75 +19,74 @@ Complete setup for MCP servers with behavior guides.
 ### Step 1: Backup Existing Files
 
 ```bash
-CLAUDE_DIR="$HOME/.claude"
-BACKUP_DIR="$CLAUDE_DIR/backups"
+BACKUP_DIR="$HOME/.claude/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p "$BACKUP_DIR"
 
-# Backup CLAUDE.md
-if [[ -f "$CLAUDE_DIR/CLAUDE.md" ]]; then
-  cp "$CLAUDE_DIR/CLAUDE.md" "$BACKUP_DIR/CLAUDE.md.backup_$TIMESTAMP"
-  echo "✅ Backup: CLAUDE.md"
+# Backup ~/.claude.json
+if [[ -f "$HOME/.claude.json" ]]; then
+  cp "$HOME/.claude.json" "$BACKUP_DIR/claude.json.backup_$TIMESTAMP"
+  echo "✅ Backup: ~/.claude.json"
 fi
 
-# Backup settings.json
-if [[ -f "$CLAUDE_DIR/settings.json" ]]; then
-  cp "$CLAUDE_DIR/settings.json" "$BACKUP_DIR/settings.json.backup_$TIMESTAMP"
-  echo "✅ Backup: settings.json"
+# Backup CLAUDE.md
+if [[ -f "$HOME/.claude/CLAUDE.md" ]]; then
+  cp "$HOME/.claude/CLAUDE.md" "$BACKUP_DIR/CLAUDE.md.backup_$TIMESTAMP"
+  echo "✅ Backup: CLAUDE.md"
 fi
 ```
 
-### Step 2: Update settings.json mcpServers (Skip Duplicates)
+### Step 2: Update ~/.claude.json mcpServers (Skip Duplicates)
 
-Add MCP servers to `~/.claude/settings.json` mcpServers field. Skip if already exists.
+Add MCP servers to `~/.claude.json` mcpServers field. Skip if already exists.
 
 **Ask user:** "Enter your MORPH_API_KEY (from https://morphllm.com) or press Enter to skip Morphllm:"
 
 ```bash
-SETTINGS_FILE="$HOME/.claude/settings.json"
+CLAUDE_JSON="$HOME/.claude.json"
 # MORPH_API_KEY from user input
 
-# Ensure mcpServers exists
-if ! jq -e '.mcpServers' "$SETTINGS_FILE" > /dev/null 2>&1; then
-  jq '.mcpServers = {}' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
+# Ensure mcpServers exists as object
+if ! jq -e '.mcpServers | type == "object"' "$CLAUDE_JSON" > /dev/null 2>&1; then
+  jq '.mcpServers = {}' "$CLAUDE_JSON" > tmp.json && mv tmp.json "$CLAUDE_JSON"
 fi
 
 # Add context7 (skip if exists)
-if ! jq -e '.mcpServers.context7' "$SETTINGS_FILE" > /dev/null 2>&1; then
+if ! jq -e '.mcpServers.context7' "$CLAUDE_JSON" > /dev/null 2>&1; then
   jq '.mcpServers.context7 = {
     "command": "npx",
     "args": ["-y", "@upstash/context7-mcp"]
-  }' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
+  }' "$CLAUDE_JSON" > tmp.json && mv tmp.json "$CLAUDE_JSON"
   echo "✅ Added: context7"
 else
   echo "⏭️  Skipped: context7 (already exists)"
 fi
 
 # Add serena (skip if exists)
-if ! jq -e '.mcpServers.serena' "$SETTINGS_FILE" > /dev/null 2>&1; then
+if ! jq -e '.mcpServers.serena' "$CLAUDE_JSON" > /dev/null 2>&1; then
   jq '.mcpServers.serena = {
     "command": "uvx",
     "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--context", "ide-assistant"]
-  }' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
+  }' "$CLAUDE_JSON" > tmp.json && mv tmp.json "$CLAUDE_JSON"
   echo "✅ Added: serena"
 else
   echo "⏭️  Skipped: serena (already exists)"
 fi
 
 # Add sequential-thinking (skip if exists)
-if ! jq -e '.mcpServers["sequential-thinking"]' "$SETTINGS_FILE" > /dev/null 2>&1; then
+if ! jq -e '.mcpServers["sequential-thinking"]' "$CLAUDE_JSON" > /dev/null 2>&1; then
   jq '.mcpServers["sequential-thinking"] = {
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-  }' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
+  }' "$CLAUDE_JSON" > tmp.json && mv tmp.json "$CLAUDE_JSON"
   echo "✅ Added: sequential-thinking"
 else
   echo "⏭️  Skipped: sequential-thinking (already exists)"
 fi
 
 # Add morphllm-fast-apply (skip if exists, include API key in env)
-if ! jq -e '.mcpServers["morphllm-fast-apply"]' "$SETTINGS_FILE" > /dev/null 2>&1; then
+if ! jq -e '.mcpServers["morphllm-fast-apply"]' "$CLAUDE_JSON" > /dev/null 2>&1; then
   if [[ -n "$MORPH_API_KEY" && "$MORPH_API_KEY" != "" ]]; then
     jq --arg apikey "$MORPH_API_KEY" '.mcpServers["morphllm-fast-apply"] = {
       "command": "npx",
@@ -95,11 +94,10 @@ if ! jq -e '.mcpServers["morphllm-fast-apply"]' "$SETTINGS_FILE" > /dev/null 2>&
       "env": {
         "MORPH_API_KEY": $apikey
       }
-    }' "$SETTINGS_FILE" > tmp.json && mv tmp.json "$SETTINGS_FILE"
+    }' "$CLAUDE_JSON" > tmp.json && mv tmp.json "$CLAUDE_JSON"
     echo "✅ Added: morphllm-fast-apply (with API key)"
   else
     echo "⏭️  Skipped: morphllm-fast-apply (no API key provided)"
-    echo "   To add later manually in ~/.claude/settings.json"
   fi
 else
   echo "⏭️  Skipped: morphllm-fast-apply (already exists)"
@@ -172,10 +170,10 @@ echo "✅ Added @import references to CLAUDE.md"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 BACKUPS:
+  ~/.claude/backups/claude.json.backup_[timestamp]
   ~/.claude/backups/CLAUDE.md.backup_[timestamp]
-  ~/.claude/backups/settings.json.backup_[timestamp]
 
-MCP SERVERS (in ~/.claude/settings.json → mcpServers):
+MCP SERVERS (in ~/.claude.json → mcpServers):
   • context7 (official library documentation)
   • serena (semantic code analysis + memory)
   • sequential-thinking (structured reasoning)
@@ -198,7 +196,7 @@ CLAUDE.MD IMPORTS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ADD MORPHLLM LATER (if skipped):
-  Edit ~/.claude/settings.json and add to mcpServers:
+  Edit ~/.claude.json and add to mcpServers:
   "morphllm-fast-apply": {
     "command": "npx",
     "args": ["@morph-llm/morph-fast-apply"],
@@ -206,16 +204,16 @@ ADD MORPHLLM LATER (if skipped):
   }
 
 RESTORE:
-  cp ~/.claude/backups/settings.json.backup_[timestamp] ~/.claude/settings.json
+  cp ~/.claude/backups/claude.json.backup_[timestamp] ~/.claude.json
   cp ~/.claude/backups/CLAUDE.md.backup_[timestamp] ~/.claude/CLAUDE.md
 ```
 
 ## Uninstall
 
 ```bash
-# Remove MCP servers from settings.json
+# Remove MCP servers from ~/.claude.json
 jq 'del(.mcpServers.context7, .mcpServers.serena, .mcpServers["sequential-thinking"], .mcpServers["morphllm-fast-apply"])' \
-  ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
+  ~/.claude.json > tmp.json && mv tmp.json ~/.claude.json
 
 # Remove from CLAUDE.md
 sed -i '' '/<!-- OMC-MCP-EXT:START -->/,/<!-- OMC-MCP-EXT:END -->/d' ~/.claude/CLAUDE.md
@@ -231,6 +229,6 @@ rm -f ~/.claude/MCP_Context7.md ~/.claude/MCP_Serena.md ~/.claude/MCP_Sequential
 ls -la ~/.claude/backups/
 
 # Restore
-cp ~/.claude/backups/settings.json.backup_[timestamp] ~/.claude/settings.json
+cp ~/.claude/backups/claude.json.backup_[timestamp] ~/.claude.json
 cp ~/.claude/backups/CLAUDE.md.backup_[timestamp] ~/.claude/CLAUDE.md
 ```

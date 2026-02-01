@@ -54,8 +54,8 @@ Run the setup skill to complete installation:
 ```
 
 This will:
-- ✅ Backup your existing files
-- ✅ Update `~/.claude/settings.json` mcpServers (skips duplicates)
+- ✅ Backup `~/.claude.json` and `~/.claude/CLAUDE.md`
+- ✅ Update `~/.claude.json` mcpServers (skips duplicates)
 - ✅ Copy MCP behavior guides to `~/.claude/`
 - ✅ Add `@import` references to `~/.claude/CLAUDE.md`
 - ✅ Configure Morphllm with API key directly in mcpServers
@@ -73,19 +73,19 @@ This will:
 ### What Setup Does
 
 ```
+~/.claude.json             # mcpServers updated (skips duplicates)
 ~/.claude/
-├── settings.json          # mcpServers updated (skips duplicates)
 ├── CLAUDE.md              # Updated with @import references
 ├── MCP_Context7.md        # Behavior guide (copied)
 ├── MCP_Serena.md          # Behavior guide (copied)
 ├── MCP_Sequential.md      # Behavior guide (copied)
 ├── MCP_Morphllm.md        # Behavior guide (copied)
 └── backups/
-    ├── CLAUDE.md.backup_[timestamp]
-    └── settings.json.backup_[timestamp]
+    ├── claude.json.backup_[timestamp]
+    └── CLAUDE.md.backup_[timestamp]
 ```
 
-**~/.claude/settings.json mcpServers:**
+**~/.claude.json mcpServers:**
 ```json
 {
   "mcpServers": {
